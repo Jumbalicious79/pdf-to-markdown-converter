@@ -1,0 +1,8 @@
+Place your PDF files in this directory.
+
+The converter will process any .pdf files placed here.
+
+Usage:
+1. Copy PDF files to this directory
+2. Run: ../convert.sh filename.pdf
+3. Check output/ directory for results
