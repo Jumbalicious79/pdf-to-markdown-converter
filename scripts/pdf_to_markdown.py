@@ -20,6 +20,12 @@ except ImportError:
     PYMUPDF_AVAILABLE = False
 
 try:
+    import pymupdf4llm
+    PYMUPDF4LLM_AVAILABLE = True
+except ImportError:
+    PYMUPDF4LLM_AVAILABLE = False
+
+try:
     import pdfplumber
     PDFPLUMBER_AVAILABLE = True
 except ImportError:
@@ -67,22 +73,28 @@ class PDFToMarkdownConverter:
     def _select_backend(self, backend: str) -> str:
         """Select the PDF processing backend."""
         if backend == "auto":
-            if PYMUPDF_AVAILABLE:
+            if PYMUPDF4LLM_AVAILABLE:
+                return "pymupdf4llm"
+            elif PYMUPDF_AVAILABLE:
                 return "pymupdf"
             elif PDFPLUMBER_AVAILABLE:
                 return "pdfplumber"
             else:
                 raise ImportError(
                     "No PDF library available. Install with:\n"
+                    "  pip install pymupdf4llm\n"
+                    "  or\n"
                     "  pip install pymupdf\n"
                     "  or\n"
                     "  pip install pdfplumber"
                 )
+        elif backend == "pymupdf4llm" and not PYMUPDF4LLM_AVAILABLE:
+            raise ImportError("pymupdf4llm not installed. Install with: pip install pymupdf4llm")
         elif backend == "pymupdf" and not PYMUPDF_AVAILABLE:
             raise ImportError("PyMuPDF not installed. Install with: pip install pymupdf")
         elif backend == "pdfplumber" and not PDFPLUMBER_AVAILABLE:
             raise ImportError("pdfplumber not installed. Install with: pip install pdfplumber")
-        
+
         return backend
     
     def convert_file(self, pdf_path: str, output_path: Optional[str] = None) -> str:
@@ -114,7 +126,9 @@ class PDFToMarkdownConverter:
         logger.info(f"Using backend: {self.backend}")
         
         # Extract content based on backend
-        if self.backend == "pymupdf":
+        if self.backend == "pymupdf4llm":
+            markdown_content = self._convert_with_pymupdf4llm(pdf_path, output_path)
+        elif self.backend == "pymupdf":
             markdown_content = self._convert_with_pymupdf(pdf_path, output_path)
         else:
             markdown_content = self._convert_with_pdfplumber(pdf_path, output_path)
@@ -125,6 +139,38 @@ class PDFToMarkdownConverter:
         
         return str(output_path)
     
+    def _convert_with_pymupdf4llm(self, pdf_path: Path, output_path: Path) -> str:
+        """Convert using pymupdf4llm for high-quality markdown output."""
+        import pymupdf4llm
+
+        # Build options
+        kwargs = {
+            "show_progress": False,
+        }
+
+        # Handle image extraction
+        if self.extract_images:
+            image_dir = output_path.parent / self.image_dir / output_path.stem
+            image_dir.mkdir(parents=True, exist_ok=True)
+            kwargs["write_images"] = True
+            kwargs["image_path"] = str(image_dir)
+
+        logger.info(f"Processing {pdf_path.name} with pymupdf4llm")
+        md_text = pymupdf4llm.to_markdown(str(pdf_path), **kwargs)
+
+        # Add source header
+        header = f"# {pdf_path.stem}\n\n*Converted from: {pdf_path.name}*\n\n---\n\n"
+
+        # Fix image paths to be relative to the output file
+        if self.extract_images:
+            rel_image_dir = os.path.relpath(
+                output_path.parent / self.image_dir / output_path.stem,
+                output_path.parent
+            )
+            md_text = md_text.replace(str(image_dir), rel_image_dir)
+
+        return header + md_text
+
     def _convert_with_pymupdf(self, pdf_path: Path, output_path: Path) -> str:
         """Convert using PyMuPDF."""
         import pymupdf
@@ -356,8 +402,8 @@ Examples:
                        help='Disable formatting preservation')
     parser.add_argument('--no-page-breaks', action='store_true',
                        help='Disable page break markers')
-    parser.add_argument('--backend', choices=['auto', 'pymupdf', 'pdfplumber'],
-                       default='auto', help='PDF processing backend')
+    parser.add_argument('--backend', choices=['auto', 'pymupdf4llm', 'pymupdf', 'pdfplumber'],
+                       default='auto', help='PDF processing backend (default: pymupdf4llm if available)')
     parser.add_argument('-v', '--verbose', action='store_true',
                        help='Enable verbose output')
     

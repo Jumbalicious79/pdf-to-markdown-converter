@@ -1,0 +1,29 @@
+# Virtual environment
+venv/
+.venv/
+
+# Real input/output data
+input/*.pdf
+input/*.PDF
+input/**/*.pdf
+input/**/*.PDF
+output/*.md
+output/*.MD
+output/**/*.md
+output/**/*.MD
+output/images/
+
+# Keep directory structure and placeholders
+!input/PLACE_PDFS_HERE.txt
+!output/PLACE_OUTPUT_HERE.txt
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# IDE
+.vscode/
+.idea/
