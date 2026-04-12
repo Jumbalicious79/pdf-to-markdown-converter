@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Auto-convert all PDFs in input/ directory (including subdirectories) to markdown in output/ directory
-# Usage: ./convert_all.sh
+# Usage: ./convert_all.sh [options]
+# Extra flags (--ocr, --cleanup, etc.) are passed through to the Python script
 
 # Script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -13,6 +14,13 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
+
+# Check and activate virtual environment
+if [ ! -d "venv" ]; then
+    echo -e "${YELLOW}⚠️  Virtual environment not found. Run ./convert.sh first to set up.${NC}"
+    exit 1
+fi
+source venv/bin/activate
 
 echo -e "${BLUE}🔄 Auto-converting all PDFs in input/ directory (including subdirectories)${NC}"
 echo "=================================================="
@@ -49,22 +57,22 @@ echo ""
 find input/ -type f \( -name "*.pdf" -o -name "*.PDF" \) | while read -r pdf_file; do
     # Get relative path from input/ directory
     rel_path="${pdf_file#input/}"
-    
+
     # Create output directory structure
     output_dir="output/$(dirname "$rel_path")"
     mkdir -p "$output_dir"
-    
+
     # Get filename without extension
     filename=$(basename "$rel_path" .pdf)
     filename=$(basename "$filename" .PDF)
-    
+
     # Full output path
     output_file="$output_dir/${filename}.md"
-    
+
     echo -e "${BLUE}Converting:${NC} $pdf_file → $output_file"
-    
-    # Convert the PDF
-    python3 scripts/pdf_to_markdown.py "$pdf_file" -o "$output_file"
+
+    # Convert the PDF (pass through any extra flags)
+    python3 scripts/pdf_to_markdown.py "$pdf_file" -o "$output_file" "$@"
 done
 
 echo ""
@@ -78,7 +86,7 @@ if [ -d "output" ]; then
     find output/ -type f -name "*.md" | sort | while read -r md_file; do
         echo "  ✓ $md_file"
     done
-    
+
     # Show directory structure
     echo ""
     echo -e "${BLUE}Output directory structure:${NC}"
@@ -88,3 +96,6 @@ if [ -d "output" ]; then
         echo "${indent}$(basename "$dir")/"
     done
 fi
+
+# Deactivate virtual environment
+deactivate 2>/dev/null

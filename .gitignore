@@ -24,6 +24,11 @@ output/images/
 __pycache__/
 *.pyc
 
+# API keys and secrets
+.env
+.env.*
+*.key
+
 # IDE
 .vscode/
 .idea/

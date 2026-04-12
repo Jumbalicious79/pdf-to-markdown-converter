@@ -1,13 +1,13 @@
 # PDF to Markdown Converter Requirements
 
-# Core PDF processing libraries (choose one or both)
-pymupdf>=1.23.0  # Fast and comprehensive PDF library
-# OR
-# pdfplumber>=0.10.0  # Alternative with better table extraction
+# Core - high-quality PDF to markdown (includes pymupdf)
+pymupdf4llm>=1.27.0
 
 # Image processing
-Pillow>=10.0.0  # For image extraction and processing
+Pillow>=10.0.0
 
-# Optional: Enhanced text processing
-# beautifulsoup4>=4.12.0  # For HTML to Markdown if PDF has embedded HTML
-# markdownify>=0.11.0  # HTML to Markdown conversion
+# Optional: Alternative backend with better table extraction
+# pdfplumber>=0.10.0
+
+# Optional: LLM-powered cleanup (install manually if using --cleanup)
+# anthropic>=0.40.0
