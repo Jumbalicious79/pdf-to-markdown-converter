@@ -18,7 +18,17 @@ NC='\033[0m' # No Color
 # Check Python installation
 if ! command -v python3 &> /dev/null; then
     echo -e "${RED}❌ Python 3 is not installed${NC}"
-    echo "Please install Python 3 first"
+    echo ""
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        echo "Install Python 3 on macOS:"
+        echo "  brew install python3"
+        echo "  or download from https://www.python.org/downloads/"
+    else
+        echo "Install Python 3 on Linux:"
+        echo "  sudo apt install python3 python3-venv   (Debian/Ubuntu)"
+        echo "  sudo dnf install python3                (Fedora)"
+        echo "  or download from https://www.python.org/downloads/"
+    fi
     exit 1
 fi
 

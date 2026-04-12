@@ -1,26 +1,118 @@
 # PDF to Markdown Converter
 
-A Python tool that converts PDF files to Markdown format while preserving structure, formatting, and optionally extracting images.
+A Python tool that converts PDF files to Markdown format while preserving structure, formatting, and optionally extracting images. Works on **macOS**, **Linux**, and **Windows**.
 
-## Quick Start (3 Steps)
+## Prerequisites
 
-### Option 1: Auto-Convert Everything (Easiest!)
+### Python 3.7+
 
-1. **Place your PDFs** in the `input/` directory (including subdirectories!)
-2. **Run**: `./convert_all.sh`  
-3. **Get your Markdown files** from the `output/` directory with matching structure
+The converter requires Python 3.7 or later. The scripts will detect if Python is missing and tell you where to get it.
 
-### Option 2: Convert Specific File
-
+**macOS:**
 ```bash
-# macOS / Linux
-./convert.sh document.pdf
+# Check if Python is installed
+python3 --version
 
-# Windows
-convert.bat document.pdf
+# If not installed, install via Homebrew
+brew install python3
+
+# Or download from https://www.python.org/downloads/
 ```
 
-**That's it!** Dependencies install automatically on first run.
+**Windows:**
+```powershell
+# Check if Python is installed
+python --version
+
+# If not installed, download from https://www.python.org/downloads/
+# IMPORTANT: Check "Add Python to PATH" during installation
+```
+
+### Optional: Tesseract (for OCR)
+
+Only needed if you want to convert scanned PDFs using the `--ocr` flag.
+
+**macOS:**
+```bash
+brew install tesseract
+```
+
+**Windows:**
+```powershell
+# Download installer from https://github.com/UB-Mannheim/tesseract/wiki
+# Add Tesseract to your PATH after installation
+```
+
+### Optional: Anthropic API or Claude Code CLI (for LLM cleanup)
+
+Only needed if you want to use the `--cleanup` flag for AI-powered cleanup.
+
+```bash
+# Option 1: Anthropic API
+pip install anthropic
+export ANTHROPIC_API_KEY=your-key-here  # macOS/Linux
+set ANTHROPIC_API_KEY=your-key-here     # Windows CMD
+$env:ANTHROPIC_API_KEY="your-key-here"  # Windows PowerShell
+
+# Option 2: Claude Code CLI (no API key needed)
+npm install -g @anthropic-ai/claude-code
+```
+
+---
+
+## Quick Start
+
+### macOS / Linux
+
+```bash
+# 1. Clone or download the project
+git clone https://github.com/Jumbalicious79/pdf-to-markdown-converter.git
+cd pdf-to-markdown-converter
+
+# 2. Make scripts executable (first time only)
+chmod +x convert.sh convert_all.sh
+
+# 3. Convert a PDF (auto-installs dependencies on first run)
+./convert.sh document.pdf
+
+# 4. Output appears in output/document.md
+```
+
+**Batch convert** -- place PDFs in `input/` then:
+```bash
+./convert_all.sh
+```
+
+### Windows
+
+```powershell
+# 1. Clone or download the project
+git clone https://github.com/Jumbalicious79/pdf-to-markdown-converter.git
+cd pdf-to-markdown-converter
+
+# 2. Convert a PDF (auto-installs dependencies on first run)
+convert.bat document.pdf
+
+# 3. Output appears in output\document.md
+```
+
+**Batch convert** -- place PDFs in `input\` then:
+```powershell
+convert_all.bat
+```
+
+### What Happens on First Run
+
+On **both** platforms, the first time you run the converter it will:
+
+1. Check that Python 3 is installed (tells you where to get it if not)
+2. Create a virtual environment (`venv/`)
+3. Install `pymupdf4llm` and `Pillow` automatically
+4. Run the conversion
+
+Subsequent runs skip setup and go straight to conversion.
+
+---
 
 ## Features
 
@@ -33,61 +125,91 @@ convert.bat document.pdf
 - **Post-processing cleanup** (normalizes headers, fixes tables, removes artifacts)
 - **LLM-powered cleanup** via Claude API or Claude Code CLI (`--cleanup`)
 - **Batch processing** for multiple files
-- **Directory structure preservation** - subdirectories maintained in output
-- **Auto-setup** - no manual dependency installation
+- **Directory structure preservation** -- subdirectories maintained in output
+- **Cross-platform** -- macOS, Linux, and Windows
 
-## Usage Examples
+---
 
-### Simple Commands
+## Usage
 
+### Basic Commands
+
+**macOS / Linux:**
 ```bash
-# Auto-convert all PDFs in input/ directory (including subdirectories)
-./convert_all.sh
-
-# Convert specific PDF
+# Convert a single PDF
 ./convert.sh document.pdf
 
-# Convert with images extracted
-./convert.sh document.pdf --extract-images
+# Convert all PDFs in input/ directory
+./convert_all.sh
 
-# Convert a scanned PDF with OCR
-./convert.sh scanned-document.pdf --ocr
-
-# Strip repeated page headers/footers
-./convert.sh report.pdf --strip-headers-footers
+# Convert with options
+./convert.sh document.pdf --ocr --strip-headers-footers
 ```
 
-### LLM Cleanup
+**Windows:**
+```powershell
+# Convert a single PDF
+convert.bat document.pdf
+
+# Convert all PDFs in input\ directory
+convert_all.bat
+
+# Convert with options
+convert.bat document.pdf --ocr --strip-headers-footers
+```
+
+### Common Options
 
 ```bash
-# Clean up with Claude API (requires ANTHROPIC_API_KEY)
-ANTHROPIC_API_KEY=your-key ./convert.sh messy.pdf --cleanup
+# Enable OCR for scanned PDFs
+./convert.sh scanned-doc.pdf --ocr                    # macOS/Linux
+convert.bat scanned-doc.pdf --ocr                     # Windows
 
-# Clean up with Claude Code CLI (if installed, no API key needed)
-./convert.sh messy.pdf --cleanup
+# Strip repeated page headers/footers
+./convert.sh report.pdf --strip-headers-footers       # macOS/Linux
+convert.bat report.pdf --strip-headers-footers        # Windows
+
+# Extract images
+./convert.sh document.pdf --extract-images            # macOS/Linux
+convert.bat document.pdf --extract-images             # Windows
+
+# LLM cleanup (requires Anthropic API key or Claude CLI)
+./convert.sh messy.pdf --cleanup                      # macOS/Linux
+convert.bat messy.pdf --cleanup                       # Windows
 
 # Combine options for best results
 ./convert.sh report.pdf --strip-headers-footers --ocr --cleanup
+convert.bat report.pdf --strip-headers-footers --ocr --cleanup
 ```
 
-### Advanced Usage
+### Advanced Usage (Direct Python)
 
+For full control, run the Python script directly. This works the same on all platforms once the venv is activated.
+
+**macOS / Linux:**
 ```bash
-# Full control with all options
+source venv/bin/activate
 python3 scripts/pdf_to_markdown.py document.pdf \
   --extract-images \
-  --image-dir custom-images \
   --strip-headers-footers \
   --ocr \
   --image-dpi 300 \
   --output custom-name.md \
   --verbose
+deactivate
+```
 
-# Embed images inline (base64, no separate files)
-python3 scripts/pdf_to_markdown.py document.pdf --extract-images --embed-images
-
-# Batch convert directory with pdfplumber backend
-python3 scripts/pdf_to_markdown.py --dir ./pdfs --output-dir ./converted --backend pdfplumber
+**Windows:**
+```powershell
+.\venv\Scripts\Activate.ps1
+python scripts\pdf_to_markdown.py document.pdf `
+  --extract-images `
+  --strip-headers-footers `
+  --ocr `
+  --image-dpi 300 `
+  --output custom-name.md `
+  --verbose
+deactivate
 ```
 
 ### Python API
@@ -95,7 +217,6 @@ python3 scripts/pdf_to_markdown.py --dir ./pdfs --output-dir ./converted --backe
 ```python
 from scripts.pdf_to_markdown import PDFToMarkdownConverter
 
-# Create converter with options
 converter = PDFToMarkdownConverter(
     extract_images=True,
     strip_headers_footers=True,
@@ -103,10 +224,11 @@ converter = PDFToMarkdownConverter(
     cleanup=False,
 )
 
-# Convert files
 output = converter.convert_file("document.pdf")
 files = converter.convert_directory("./pdfs", "./markdown")
 ```
+
+---
 
 ## Command Options
 
@@ -129,50 +251,40 @@ files = converter.convert_directory("./pdfs", "./markdown")
 | `--backend` | PDF library (auto/pymupdf4llm/pymupdf/pdfplumber) | `auto` |
 | `--verbose, -v` | Enable verbose output | False |
 
-## Output Format
-
-The converter produces clean Markdown with:
-
-- **Headers** detected from document layout and formatting
-- **Lists** (bullet points and numbered lists)
-- **Tables** converted to Markdown format
-- **Images** embedded with proper paths (if extracted)
-- **Page breaks** marked with horizontal rules
-- **Metadata** (source file information)
-- **Post-processed** to normalize header levels and fix table formatting
+---
 
 ## PDF Processing Backends
 
 The converter supports three backends (auto-selected by priority, or specify with `--backend`):
 
 ### pymupdf4llm (Default, Recommended)
-- **Pros**: Best quality output, layout-aware extraction, OCR support, handles headers/footers/code blocks
-- **Cons**: Larger installation size
-- **Best for**: Most documents - this should be your default
+- Best quality output, layout-aware extraction, OCR support, handles headers/footers/code blocks
+- Best for: most documents
 
 ### PyMuPDF
-- **Pros**: Fast, handles complex PDFs, image extraction
-- **Cons**: Basic text-only extraction with heuristic formatting
-- **Best for**: Fallback when pymupdf4llm is unavailable
+- Fast, handles complex PDFs, image extraction
+- Basic text-only extraction with heuristic formatting
+- Best for: fallback when pymupdf4llm is unavailable
 
 ### pdfplumber
-- **Pros**: Superior table detection, lighter weight
-- **Cons**: Slower, limited image support
-- **Best for**: Documents with lots of tables
+- Superior table detection, lighter weight
+- Slower, limited image support
+- Best for: documents with lots of tables
+
+---
 
 ## LLM Cleanup
 
 The `--cleanup` flag sends the converted markdown through an LLM for structural cleanup. This fixes issues that automated post-processing can't handle, like broken sentences split across lines, misidentified headers, and conversion artifacts.
 
-### Two Modes (tried in order)
+**Two modes (tried in order):**
 
-1. **Anthropic API**: If `ANTHROPIC_API_KEY` is set and the `anthropic` package is installed, it calls the API directly. Install with: `pip install anthropic`
+1. **Anthropic API** -- if `ANTHROPIC_API_KEY` is set and the `anthropic` package is installed
+2. **Claude Code CLI** -- if no API key is available but the `claude` command is on your PATH
 
-2. **Claude Code CLI**: If no API key is available but the `claude` command is on your PATH, it pipes the markdown through Claude Code as a subprocess.
+If neither is available, the flag is silently skipped with a warning -- the converter still produces output, just without the LLM cleanup pass. Large documents are automatically chunked at paragraph boundaries.
 
-If neither is available, the flag is silently skipped with a warning -- the converter still produces output, just without the LLM cleanup pass.
-
-Large documents are automatically chunked at paragraph boundaries to stay within token limits.
+---
 
 ## Project Structure
 
@@ -180,94 +292,141 @@ Large documents are automatically chunked at paragraph boundaries to stay within
 pdf-to-markdown-converter/
 ├── convert.sh              # Wrapper script (macOS/Linux)
 ├── convert_all.sh          # Batch convert (macOS/Linux)
-├── convert.bat             # Launcher (Windows) → calls convert.ps1
-├── convert_all.bat         # Batch launcher (Windows) → calls convert_all.ps1
+├── convert.bat             # Launcher (Windows) -> calls convert.ps1
+├── convert_all.bat         # Batch launcher (Windows) -> calls convert_all.ps1
 ├── convert.ps1             # Wrapper script (Windows PowerShell)
 ├── convert_all.ps1         # Batch convert (Windows PowerShell)
 ├── scripts/
 │   └── pdf_to_markdown.py  # Main converter
-├── input/                  # Place PDF files here
-│   ├── reports/           # Example: organize by type
-│   ├── manuals/           # Subdirectories are preserved
-│   └── presentations/     # in output structure
-├── output/                 # Converted markdown files
-│   └── images/            # Extracted images (if enabled)
+├── input/                  # Place PDF files here (subdirectories preserved)
+├── output/                 # Converted markdown files appear here
 ├── requirements.txt        # Python dependencies
-└── README.md              # This file
+└── README.md
 ```
 
-## Installation & Setup
+---
 
-### Automatic (Recommended)
-```bash
-# Just run the converter - it handles setup automatically
-./convert.sh your-file.pdf
-```
+## Manual Installation
 
-### Manual
+If you prefer to set up manually instead of using the auto-setup scripts:
+
+**macOS / Linux:**
 ```bash
-# Create virtual environment
 python3 -m venv venv
 source venv/bin/activate
-
-# Install dependencies
 pip install -r requirements.txt
 
-# Optional: Install LLM cleanup support
+# Optional: LLM cleanup support
 pip install anthropic
 ```
 
+**Windows:**
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+# Optional: LLM cleanup support
+pip install anthropic
+```
+
+---
+
 ## Requirements
 
-- **Python 3.7+**
-- **pymupdf4llm** (auto-installed, includes PyMuPDF)
-- **Pillow** for image extraction (auto-installed)
-- **anthropic** for LLM cleanup (optional, install manually)
-- **Tesseract** for OCR (optional, install with `brew install tesseract`)
+| Requirement | Required? | Install |
+|-------------|-----------|---------|
+| Python 3.7+ | Yes | [python.org](https://www.python.org/downloads/) or `brew install python3` |
+| pymupdf4llm | Yes (auto-installed) | `pip install pymupdf4llm` |
+| Pillow | Yes (auto-installed) | `pip install Pillow` |
+| Tesseract | Only for `--ocr` | `brew install tesseract` (macOS) or [Windows installer](https://github.com/UB-Mannheim/tesseract/wiki) |
+| anthropic | Only for `--cleanup` | `pip install anthropic` |
+| Claude Code CLI | Only for `--cleanup` | `npm install -g @anthropic-ai/claude-code` |
+
+---
 
 ## Troubleshooting
 
-### Common Issues
+### Python not found
 
-**ImportError: No PDF library available**
+**macOS:**
+```bash
+# Install via Homebrew
+brew install python3
+
+# Or download from python.org
+open https://www.python.org/downloads/
+```
+
+**Windows:**
+```powershell
+# Download from python.org -- check "Add Python to PATH" during install
+start https://www.python.org/downloads/
+```
+
+### No PDF library available
 ```bash
 pip install pymupdf4llm
 ```
 
-**Images not extracting**
+### Images not extracting
 ```bash
-pip install pillow
-# Use --extract-images flag
+pip install Pillow
+# Use the --extract-images flag
 ```
 
-**Poor text extraction from scanned PDFs**
-```bash
-# Install Tesseract OCR
-brew install tesseract  # macOS
-sudo apt install tesseract-ocr  # Linux
+### Poor text extraction from scanned PDFs
 
-# Then use --ocr flag
+Install Tesseract OCR, then use the `--ocr` flag:
+
+**macOS:**
+```bash
+brew install tesseract
 ./convert.sh scanned-doc.pdf --ocr
 ```
 
-**Tables not formatting correctly**
-- Use pdfplumber backend: `--backend pdfplumber`
+**Windows:**
+```powershell
+# Download and install Tesseract from https://github.com/UB-Mannheim/tesseract/wiki
+# Add to PATH, then:
+convert.bat scanned-doc.pdf --ocr
+```
 
-**LLM cleanup not working**
+### Tables not formatting correctly
+
+Use the pdfplumber backend:
 ```bash
-# Option 1: Set API key
-export ANTHROPIC_API_KEY=your-key-here
+./convert.sh report.pdf --backend pdfplumber       # macOS/Linux
+convert.bat report.pdf --backend pdfplumber         # Windows
+```
+
+### Repeated headers/footers in output
+```bash
+./convert.sh report.pdf --strip-headers-footers    # macOS/Linux
+convert.bat report.pdf --strip-headers-footers      # Windows
+```
+
+### LLM cleanup not working
+
+```bash
+# Option 1: Set Anthropic API key
+export ANTHROPIC_API_KEY=your-key-here              # macOS/Linux
+$env:ANTHROPIC_API_KEY="your-key-here"              # Windows PowerShell
 pip install anthropic
 
 # Option 2: Install Claude Code CLI
 npm install -g @anthropic-ai/claude-code
 ```
 
-**Repeated headers/footers in output**
-```bash
-# Use the strip flag
-./convert.sh report.pdf --strip-headers-footers
+### Windows: "execution of scripts is disabled"
+
+If PowerShell blocks the script, run:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
+Or use the `.bat` launcher which handles this automatically.
+
+---
 
 ## Limitations
 
@@ -279,6 +438,6 @@ npm install -g @anthropic-ai/claude-code
 
 ---
 
-**PDF to Markdown Converter** - Convert your PDFs to clean, structured Markdown!
+**PDF to Markdown Converter** -- Convert your PDFs to clean, structured Markdown!
 
 *Created: 2025-08-08 | Updated: 2026-04-12*

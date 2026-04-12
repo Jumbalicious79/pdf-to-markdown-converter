@@ -8,8 +8,15 @@ Set-Location $ScriptDir
 # Check Python installation
 if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
     if (-not (Get-Command python3 -ErrorAction SilentlyContinue)) {
-        Write-Host "ERROR: Python is not installed" -ForegroundColor Red
-        Write-Host "Please install Python 3 first: https://www.python.org/downloads/"
+        Write-Host "ERROR: Python 3 is not installed" -ForegroundColor Red
+        Write-Host ""
+        Write-Host "Install Python 3 on Windows:" -ForegroundColor Yellow
+        Write-Host "  1. Download from https://www.python.org/downloads/"
+        Write-Host "  2. Run the installer"
+        Write-Host "  3. IMPORTANT: Check 'Add Python to PATH' during installation"
+        Write-Host ""
+        Write-Host "Or install via winget:" -ForegroundColor Yellow
+        Write-Host "  winget install Python.Python.3.13"
         exit 1
     }
     $python = "python3"
